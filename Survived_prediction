@@ -1,0 +1,40 @@
+import pandas as pd
+from matplotlib import pyplot as plt
+import numpy as np
+
+#Training data set
+Df = pd.read_csv("C:/train.csv")
+
+
+Df = Df.fillna(method='ffill') #Handling the empty data
+Df['Embarkednum']=Df.Embarked.map({'S':0, 'C':1, 'Q':2}) #Converting object data type into integer
+Df['Sexnum']=Df.Sex.map({'male':0, 'female':1})
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(Df[['Pclass','Sexnum','SibSp','Embarkednum']],Df.Survived,test_size=0.1) #splitting the data into training and testing data set
+
+from sklearn.linear_model import LogisticRegression #creating logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, Y_train)#Training the model
+model.predict(X_test)#Prediction on the test set
+
+print(model.score(X_test, Y_test)) #verifying the prediction score
+
+#Now predicting the test data set
+
+Df4 = pd.read_csv("C:/test.csv")
+
+print(Df4.isna().sum())
+
+Df4 = Df4.fillna(method='ffill')
+
+Df4['Embarkednum']=Df4.Embarked.map({'S':0, 'C':1, 'Q':2})
+Df4['Sexnum']=Df4.Sex.map({'male':0, 'female':1})
+
+features=['Pclass','Sexnum','SibSp','Embarkednum']
+test_data=Df4[features]
+test_predict=model.predict(test_data)
+
+survived=pd.DataFrame(test_predict, columns=['Survived'],index=Df4['PassengerId']) #Creating a separate dataframe of predicted output
+survived.reset_index(level=0, inplace=True)
+survived.to_csv('C:/Titanic_predict/Predicted_1.csv',index=False) #Converting the dataframe into csv and save into path
